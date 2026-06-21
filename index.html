@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>여행영어 매일학습</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    background: linear-gradient(135deg, #e0f2fe, #fef3c7);
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  header {
+    background: #0ea5e9;
+    color: white;
+    padding: 18px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+  nav button {
+    background: white;
+    border: 2px solid #0ea5e9;
+    color: #0ea5e9;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  nav button.active {
+    background: #0ea5e9;
+    color: white;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 10px 16px 60px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+
+  .date-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .sentence-en {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0c4a6e;
+    margin-bottom: 6px;
+  }
+  .sentence-ko {
+    font-size: 15px;
+    color: #4b5563;
+    margin-bottom: 12px;
+  }
+
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-speak {
+    background: #fbbf24;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #78350f;
+  }
+  .btn-speak:active { transform: scale(0.97); }
+
+  .btn-small {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #374151;
+  }
+
+  select, input[type=range] {
+    font-size: 13px;
+  }
+
+  .empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 40px 20px;
+    font-size: 14px;
+  }
+
+  /* review */
+  .review-box {
+    text-align: center;
+  }
+  .ko-prompt {
+    font-size: 19px;
+    font-weight: 700;
+    color: #0c4a6e;
+    margin: 16px 0;
+    min-height: 50px;
+  }
+  .progress {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+  textarea#answerInput {
+    width: 100%;
+    min-height: 70px;
+    border-radius: 10px;
+    border: 2px solid #d1d5db;
+    padding: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: none;
+  }
+  .feedback {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: left;
+  }
+  .feedback.correct { background: #dcfce7; color: #166534; }
+  .feedback.partial { background: #fef9c3; color: #854d0e; }
+  .feedback.wrong { background: #fee2e2; color: #991b1b; }
+
+  .btn-primary {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .btn-primary:disabled { opacity: 0.5; }
+
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .stat-num { font-size: 22px; font-weight: 800; color: #0ea5e9; }
+  .stat-label { font-size: 12px; color: #6b7280; }
+
+  footer {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 12px;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ 여행영어 매일학습</h1>
+  <p>매일 새로운 5문장 + 원어민 발음 + 복습</p>
+</header>
+
+<nav>
+  <button id="tabToday" class="active">오늘의 문장</button>
+  <button id="tabReview">복습하기</button>
+  <button id="tabAll">전체 보관함</button>
+</nav>
+
+<main>
+  <div id="view"></div>
+</main>
+
+<footer>
+  데이터는 이 브라우저(localStorage)에 저장됩니다. 다른 기기/브라우저와 공유되지 않습니다.
+</footer>
+
+<script>
+/* =========================================================
+   1. 문장 데이터 풀 (여행 상황별 문장 + 한글 뜻)
+   ========================================================= */
+const SENTENCE_POOL = [
+  ["Excuse me, where is the nearest subway station?", "실례합니다, 가장 가까운 지하철역이 어디인가요?"],
+  ["Could you recommend a good local restaurant?", "괜찮은 현지 식당 좀 추천해 주시겠어요?"],
+  ["How much does it cost to get to the airport?", "공항까지 가는 데 비용이 얼마나 드나요?"],
+  ["Do you have any rooms available for tonight?", "오늘 밤에 묵을 수 있는 방이 있나요?"],
+  ["I'd like to check in, please.", "체크인하고 싶습니다."],
+  ["What time does the museum open?", "박물관은 몇 시에 문을 여나요?"],
+  ["Can I get a window seat, please?", "창가 자리로 주실 수 있나요?"],
+  ["Is breakfast included in the price?", "가격에 아침식사가 포함되어 있나요?"],
+  ["I'm lost. Can you help me find my way?", "길을 잃었어요. 길 찾는 것을 도와주시겠어요?"],
+  ["How long does it take to walk there?", "거기까지 걸어서 얼마나 걸리나요?"],
+  ["Could you call a taxi for me?", "택시를 좀 불러주시겠어요?"],
+  ["I'd like to exchange some money.", "환전을 좀 하고 싶습니다."],
+  ["Where can I buy a SIM card?", "유심카드는 어디서 살 수 있나요?"],
+  ["Is this seat taken?", "이 자리는 사람이 있나요?"],
+  ["Can I have the menu, please?", "메뉴 좀 주시겠어요?"],
+  ["What do you recommend?", "추천 메뉴가 있나요?"],
+  ["I'm allergic to peanuts.", "저는 땅콩 알러지가 있어요."],
+  ["Could I get the bill, please?", "계산서 좀 주시겠어요?"],
+  ["Do you accept credit cards?", "신용카드 받으시나요?"],
+  ["I'd like to book a table for two.", "두 명 자리로 예약하고 싶습니다."],
+  ["What's the Wi-Fi password?", "와이파이 비밀번호가 뭔가요?"],
+  ["Where is the restroom?", "화장실이 어디에 있나요?"],
+  ["Can you take a picture of us, please?", "저희 사진 좀 찍어주시겠어요?"],
+  ["How do I get to the city center?", "시내 중심가까지 어떻게 가나요?"],
+  ["Is there a discount for students?", "학생 할인이 있나요?"],
+  ["What time is check-out?", "체크아웃은 몇 시인가요?"],
+  ["Could you wake me up at 7 AM?", "오전 7시에 깨워주시겠어요?"],
+  ["I need to extend my stay one more night.", "하룻밤 더 묵고 싶어요."],
+  ["My flight got delayed.", "제 비행기가 연착되었어요."],
+  ["Where is the baggage claim?", "수하물 찾는 곳이 어디인가요?"],
+  ["I lost my passport. What should I do?", "여권을 잃어버렸어요. 어떻게 해야 하나요?"],
+  ["Can you suggest some tourist attractions nearby?", "근처 관광 명소를 추천해 주시겠어요?"],
+  ["How much is the entrance fee?", "입장료가 얼마인가요?"],
+  ["Is photography allowed here?", "여기서 사진 촬영이 가능한가요?"],
+  ["What time does the last train leave?", "막차는 몇 시에 떠나나요?"],
+  ["Can I get a refund for this ticket?", "이 티켓 환불 받을 수 있나요?"],
+  ["I'd like a one-way ticket to downtown.", "시내까지 가는 편도 티켓 한 장 주세요."],
+  ["Does this bus go to the airport?", "이 버스가 공항에 가나요?"],
+  ["I think I'm on the wrong train.", "제가 잘못된 기차를 탄 것 같아요."],
+  ["Where can I rent a car?", "차는 어디서 빌릴 수 있나요?"],
+  ["Could you show me on the map?", "지도에서 보여주시겠어요?"],
+  ["Is it safe to walk around here at night?", "여기는 밤에 돌아다녀도 안전한가요?"],
+  ["I'm feeling sick. Where's the nearest pharmacy?", "몸이 안 좋아요. 가장 가까운 약국이 어디인가요?"],
+  ["Could you give me a discount?", "조금 깎아주실 수 있나요?"],
+  ["This isn't what I ordered.", "이건 제가 주문한 게 아니에요."],
+  ["Can I try this on?", "이거 입어봐도 될까요?"],
+  ["Do you have this in a different size?", "이거 다른 사이즈 있나요?"],
+  ["I'm just looking, thank you.", "그냥 구경하는 중이에요, 감사합니다."],
+  ["Could I have a receipt, please?", "영수증 좀 주시겠어요?"],
+  ["What's the best way to get to the beach?", "해변까지 가는 가장 좋은 방법은 무엇인가요?"],
+  ["Is it possible to get a late check-out?", "늦은 체크아웃이 가능한가요?"],
+  ["Could you recommend a good travel route?", "괜찮은 여행 경로를 추천해 주시겠어요?"],
+  ["I'd like to buy a ticket for the show.", "공연 티켓을 한 장 사고 싶어요."],
+  ["What currency do you use here?", "여기서는 어떤 화폐를 사용하나요?"],
+  ["Can you write that down for me?", "그것을 적어 주시겠어요?"],
+  ["I don't speak much English, sorry.", "영어를 잘 못해요, 죄송합니다."],
+  ["Could you speak more slowly, please?", "조금 더 천천히 말씀해 주시겠어요?"],
+  ["Where is the nearest ATM?", "가장 가까운 ATM이 어디인가요?"],
+  ["I'd like to report a lost item.", "분실물을 신고하고 싶습니다."],
+  ["Does this train stop at the central station?", "이 기차는 중앙역에 정차하나요?"]
+];
+
+/* =========================================================
+   2. 저장소 키
+   ========================================================= */
+const KEY_DAILY = "travelEnglish_dailySets";   // { "2026-06-21": [ {en, ko}, ... ] }
+const KEY_REVIEW_STATS = "travelEnglish_reviewStats"; // { correct: n, total: n }
+
+function loadDailySets() {
+  try { return JSON.parse(localStorage.getItem(KEY_DAILY)) || {}; }
+  catch(e) { return {}; }
+}
+function saveDailySets(data) {
+  localStorage.setItem(KEY_DAILY, JSON.stringify(data));
+}
+function loadStats() {
+  try { return JSON.parse(localStorage.getItem(KEY_REVIEW_STATS)) || {correct:0, total:0}; }
+  catch(e) { return {correct:0, total:0}; }
+}
+function saveStats(s) {
+  localStorage.setItem(KEY_REVIEW_STATS, JSON.stringify(s));
+}
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+/* 날짜를 시드로 사용해 매일 다른(하지만 그날 안에서는 고정된) 5문장을 뽑는다 */
+function seededShuffleIndices(seedStr, poolLength) {
+  let seed = 0;
+  for (let i=0;i<seedStr.length;i++) seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
+  function rand() {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  }
+  const idx = Array.from({length: poolLength}, (_,i)=>i);
+  for (let i = idx.length -1; i>0; i--) {
+    const j = Math.floor(rand() * (i+1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx;
+}
+
+function ensureTodaySet() {
+  const sets = loadDailySets();
+  const key = todayKey();
+  if (!sets[key]) {
+    const order = seededShuffleIndices(key, SENTENCE_POOL.length);
+    const picked = order.slice(0,5).map(i => ({en: SENTENCE_POOL[i][0], ko: SENTENCE_POOL[i][1]}));
+    sets[key] = picked;
+    saveDailySets(sets);
+  }
+  return sets[key];
+}
+
+function getAllSentencesFlat() {
+  const sets = loadDailySets();
+  const out = [];
+  Object.keys(sets).sort().reverse().forEach(date => {
+    sets[date].forEach(item => out.push({date, en: item.en, ko: item.ko}));
+  });
+  return out;
+}
+
+/* =========================================================
+   3. 발음 (Web Speech API)
+   ========================================================= */
+function speak(text) {
+  if (!('speechSynthesis' in window)) {
+    alert("이 브라우저는 음성 합성을 지원하지 않습니다.");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.rate = 0.95;
+  const voices = window.speechSynthesis.getVoices();
+  const enVoice = voices.find(v => v.lang === "en-US") || voices.find(v => v.lang.startsWith("en"));
+  if (enVoice) utter.voice = enVoice;
+  window.speechSynthesis.speak(utter);
+}
+// 일부 브라우저는 voiceschanged 이후에 목록이 채워짐
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+}
+
+/* =========================================================
+   4. 간단한 답안 채점 (유사도 기반)
+   ========================================================= */
+function normalize(s) {
+  return s.toLowerCase().replace(/[.,!?'"]/g, "").replace(/\s+/g, " ").trim();
+}
+function similarity(a, b) {
+  a = normalize(a); b = normalize(b);
+  if (a === b) return 1;
+  const wa = a.split(" "), wb = b.split(" ");
+  const setB = new Set(wb);
+  let match = 0;
+  wa.forEach(w => { if (setB.has(w)) match++; });
+  const denom = Math.max(wa.length, wb.length);
+  return denom === 0 ? 0 : match / denom;
+}
+
+/* =========================================================
+   5. 화면 렌더링
+   ========================================================= */
+const view = document.getElementById("view");
+const tabToday = document.getElementById("tabToday");
+const tabReview = document.getElementById("tabReview");
+const tabAll = document.getElementById("tabAll");
+
+function setActiveTab(tab) {
+  [tabToday, tabReview, tabAll].forEach(b => b.classList.remove("active"));
+  tab.classList.add("active");
+}
+
+tabToday.onclick = () => { setActiveTab(tabToday); renderToday(); };
+tabReview.onclick = () => { setActiveTab(tabReview); startReview(); };
+tabAll.onclick = () => { setActiveTab(tabAll); renderAll(); };
+
+function renderToday() {
+  const todays = ensureTodaySet();
+  const dateStr = todayKey();
+  let html = `<div class="card"><div class="date-label">📅 ${dateStr} 오늘의 문장 (5개)</div></div>`;
+  todays.forEach((item, i) => {
+    html += `
+      <div class="card">
+        <div class="sentence-en">${i+1}. ${escapeHtml(item.en)}</div>
+        <div class="sentence-ko">${escapeHtml(item.ko)}</div>
+        <div class="row">
+          <button class="btn-speak" data-speak="${escapeAttr(item.en)}">🔊 발음 듣기</button>
+        </div>
+      </div>`;
+  });
+  view.innerHTML = html;
+  bindSpeakButtons();
+}
+
+function renderAll() {
+  const all = getAllSentencesFlat();
+  if (all.length === 0) {
+    view.innerHTML = `<div class="empty">아직 저장된 문장이 없습니다.<br>먼저 "오늘의 문장" 탭을 확인해보세요!</div>`;
+    return;
+  }
+  let html = "";
+  let lastDate = null;
+  all.forEach(item => {
+    if (item.date !== lastDate) {
+      html += `<div class="date-label" style="margin:18px 4px 6px;">📅 ${item.date}</div>`;
+      lastDate = item.date;
+    }
+    html += `
+      <div class="card">
+        <div class="sentence-en">${escapeHtml(item.en)}</div>
+        <div class="sentence-ko">${escapeHtml(item.ko)}</div>
+        <div class="row">
+          <button class="btn-speak" data-speak="${escapeAttr(item.en)}">🔊 발음 듣기</button>
+        </div>
+      </div>`;
+  });
+  view.innerHTML = html;
+  bindSpeakButtons();
+}
+
+/* ---- 복습 모드 ---- */
+let reviewQueue = [];
+let reviewIndex = 0;
+
+function startReview() {
+  const all = getAllSentencesFlat();
+  if (all.length === 0) {
+    view.innerHTML = `<div class="empty">복습할 문장이 없습니다.<br>먼저 "오늘의 문장" 탭에서 문장을 받아보세요!</div>`;
+    return;
+  }
+  // 중복 제거 (같은 영어문장 여러 날 나올 수 있음) + 셔플
+  const map = {};
+  all.forEach(it => { map[it.en] = it; });
+  reviewQueue = Object.values(map);
+  for (let i = reviewQueue.length -1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [reviewQueue[i], reviewQueue[j]] = [reviewQueue[j], reviewQueue[i]];
+  }
+  reviewIndex = 0;
+  renderReviewItem();
+}
+
+function renderReviewItem() {
+  const stats = loadStats();
+  if (reviewIndex >= reviewQueue.length) {
+    view.innerHTML = `
+      <div class="card review-box">
+        <div class="ko-prompt">🎉 오늘 복습 완료!</div>
+        <div class="progress">정답률: ${stats.total ? Math.round(stats.correct/stats.total*100) : 0}% (${stats.correct}/${stats.total})</div>
+        <button class="btn-primary" id="restartBtn">다시 복습하기</button>
+      </div>`;
+    document.getElementById("restartBtn").onclick = startReview;
+    return;
+  }
+  const item = reviewQueue[reviewIndex];
+  view.innerHTML = `
+    <div class="card stats">
+      <div><div class="stat-num">${stats.correct}</div><div class="stat-label">맞춤</div></div>
+      <div><div class="stat-num">${stats.total}</div><div class="stat-label">전체 시도</div></div>
+    </div>
+    <div class="card review-box">
+      <div class="progress">${reviewIndex+1} / ${reviewQueue.length}</div>
+      <div class="ko-prompt">"${escapeHtml(item.ko)}"</div>
+      <div class="sentence-ko" style="font-size:13px; color:#9ca3af;">위 한글 뜻을 영어로 말해보세요</div>
+      <textarea id="answerInput" placeholder="영어로 입력해보세요..."></textarea>
+      <div class="row" style="justify-content:center; margin-top:10px;">
+        <button class="btn-primary" id="checkBtn">정답 확인</button>
+        <button class="btn-small" id="skipSpeak">🔊 정답 발음 듣기</button>
+      </div>
+      <div id="feedbackArea"></div>
+    </div>`;
+
+  document.getElementById("checkBtn").onclick = () => checkAnswer(item);
+  document.getElementById("skipSpeak").onclick = () => speak(item.en);
+  document.getElementById("answerInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) checkAnswer(item);
+  });
+}
+
+function checkAnswer(item) {
+  const input = document.getElementById("answerInput").value.trim();
+  if (!input) { alert("영어로 답을 입력해 주세요."); return; }
+  const sim = similarity(input, item.en);
+  const stats = loadStats();
+  stats.total++;
+
+  let cls, msg;
+  if (sim >= 0.8) {
+    cls = "correct"; msg = "✅ 정답입니다! 훌륭해요.";
+    stats.correct++;
+  } else if (sim >= 0.4) {
+    cls = "partial"; msg = "🟡 거의 맞았어요! 다시 한 번 비교해보세요.";
+  } else {
+    cls = "wrong"; msg = "❌ 다시 시도해보세요.";
+  }
+  saveStats(stats);
+
+  const feedbackArea = document.getElementById("feedbackArea");
+  feedbackArea.innerHTML = `
+    <div class="feedback ${cls}">
+      <div>${msg}</div>
+      <div style="margin-top:6px;"><b>정답:</b> ${escapeHtml(item.en)}</div>
+    </div>
+    <button class="btn-primary" id="nextBtn">다음 문장 ▶</button>`;
+  document.getElementById("nextBtn").onclick = () => {
+    reviewIndex++;
+    renderReviewItem();
+  };
+  speak(item.en);
+}
+
+/* ---- 공통 ---- */
+function bindSpeakButtons() {
+  document.querySelectorAll("[data-speak]").forEach(btn => {
+    btn.onclick = () => speak(btn.getAttribute("data-speak"));
+  });
+}
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function escapeAttr(s) {
+  return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+}
+
+/* =========================================================
+   6. 초기 실행
+   ========================================================= */
+ensureTodaySet();
+renderToday();
+</script>
+</body>
+</html>
